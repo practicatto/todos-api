@@ -7,7 +7,7 @@ export class TasksController {
   constructor(private readonly tasksService: TasksService) {}
 
   @Get()
-  getAllTasks() {
-    return this.tasksService.findAll();
+  async getAllTasks() {
+    return await this.tasksService.findAll();
   }
 }
