@@ -1,17 +1,19 @@
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS deps
 RUN npm install -g pnpm
-RUN npm install -g nest-cli
-WORKDIR /usr/src/app
-COPY package*.json pnpm-lock.yaml ./
-RUN pnpm install
+WORKDIR /app
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+FROM node:20-alpine AS builder
+RUN npm install -g pnpm
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm run build
 
-FROM node:18-alpine
-RUN npm install -g pnpm
-RUN npm install -g nest-cli
-WORKDIR /usr/src/app
-COPY --from=builder /usr/src/app/dist ./dist
-COPY package*.json pnpm-lock.yaml ./
-RUN pnpm install --prod
-CMD ["pnpm", "run", "start:dev"]
+FROM node:20-alpine AS runner
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+COPY --from=deps /app/node_modules ./node_modules
+COPY package.json pnpm-lock.yaml ./
+CMD ["node", "dist/main"]

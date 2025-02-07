@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { tasks } from '../db/schema';
+import type { Database } from '../db/db.types';
 
 @Injectable()
 export class TasksService {
-  constructor(private db: NodePgDatabase) {}
+  constructor(private db: Database) {}
 
   async findAll() {
-    return this.db.select().from(tasks);
+    return await this.db.select().from(tasks);
   }
 }
